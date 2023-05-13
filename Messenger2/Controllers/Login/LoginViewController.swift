@@ -53,18 +53,38 @@ class LoginViewController: UIViewController {
         return field
     }()
     
+    private let loginButton: UIButton = {
+       let button = UIButton()
+        button.setTitle( "Login", for: .normal)
+        button.backgroundColor = .black
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log In"
-        view.backgroundColor = .gray
+        view.backgroundColor = .darkGray
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .done, target: self, action: #selector(didTapRegister))
+        
+        loginButton.addTarget(self,
+                              action: #selector(loginButtonTapped),
+                              for: .touchUpInside)
+        emailField.delegate = self
+        passwordField.delegate = self
+        
+        
         
         //addition of subvviews
         view.addSubview(scrollView)
         scrollView.addSubview(imageView)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
+        scrollView.addSubview(loginButton)
         
     }
     
@@ -85,8 +105,33 @@ class LoginViewController: UIViewController {
                                   y: emailField.bottom + 10,
                                   width: scrollView.width-60,
                                   height: 52)
+        loginButton.frame = CGRect(x: 30,
+                                  y: passwordField.bottom + 10,
+                                  width: scrollView.width-60,
+                                  height: 52)
     }
 
+    //call of the login button
+    @objc private func loginButtonTapped() {
+        
+        emailField .resignFirstResponder()
+        passwordField .resignFirstResponder()
+        guard let email = emailField.text, let password = passwordField.text,
+              !email.isEmpty, !password.isEmpty, password.count >= 6
+        else {
+            alertUserLoginError()
+            return
+        }
+    }
+    
+    //firebase login
+    
+    func alertUserLoginError(){
+        let alert = UIAlertController(title: "DAMN!", message: "Please enter the whole data", preferredStyle: .alert)
+         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel))
+         present(alert, animated: true)
+    }
+    
     @objc private func didTapRegister(){
         let vc = RegisterViewController()
         vc.title = "Create an Account"
@@ -94,4 +139,17 @@ class LoginViewController: UIViewController {
     }
  
 
+    
+}
+extension LoginViewController: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == emailField{
+            passwordField.becomeFirstResponder()
+        }
+        else if textField == passwordField{
+            loginButtonTapped()
+        }
+        return true
+    }
 }
